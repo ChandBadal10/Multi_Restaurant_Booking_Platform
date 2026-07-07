@@ -2,13 +2,13 @@ import { Request, Response } from "express";
 import  jwt  from "jsonwebtoken";
 import { User } from "../models/User.js";
 import bcrypt from "bcrypt"
+import { AuthRequest } from "../middlewares/auth.js";
 
 // Helper to generate the JWT TOKEN
 
 const generateToken = (id: string) => {
     return jwt.sign({id}, process.env.JWT_SECRET as string, {expiresIn: "30d"})
 }
-
 
 
 
@@ -93,7 +93,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 
         // check the user
-        const user = await User.findOne({email})
+        const user = await User.findOne({email});
 
         if(!user) {
             res.status(401).json({
@@ -136,10 +136,20 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 // GET   /api/auth/me
 // Access Private
 
-export const getMe = async (req: Request, res: Response): Promise<void> => {
+export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-
-    } catch (error) {
+        if(!req.user) {
+            res.status(401).json({
+                message: "Not authorized"
+            });
+            return;
+        }
+        res.json(req.user)
+    } catch (error: any) {
+        console.error(error);
+        res.status(500).json({
+            message: error.message
+        });
 
     }
 }
