@@ -63,17 +63,6 @@ export const getRestaurants = async (req: Request, res: Response): Promise<void>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 // Get featured and exclusive restaurants
 // Get /api/restaurants/featured
 
@@ -92,6 +81,8 @@ export const getFeaturedRestaurants = async (req: Request, res: Response): Promi
         })
     }
 }
+
+
 
 
 
@@ -176,7 +167,21 @@ export const getRestaurantAvailability = async (req: Request, res: Response): Pr
         })
 
         // Map slots to available capacities
+        const availability = restaurant.availableSlots.map((slot) => {
+            const bookedSeats = bookings.filter((b) => b.time === slot).reduce((sum, b) => sum + b.guests, 0)
 
+
+        const totalSeats = restaurant.totalSeats || 20;
+        const availableSeats = Math.max(0, totalSeats - bookedSeats);
+
+        return {
+            time: slot,
+            availableSeats,
+            isAvaibalbe: availableSeats > 0
+            }
+        })
+
+        res.json(availability)
 
     } catch (error: any) {
         console.log(error);
